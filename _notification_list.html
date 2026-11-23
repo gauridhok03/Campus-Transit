@@ -1,0 +1,11 @@
+{% from "_macros.html" import notification_item %}
+{% if notifications %}
+<ul class="notif-list">
+  {% for n in notifications %}
+    {% if grouped and loop.changed(n.day_label) %}<li class="day-head">{{ n.day_label }}</li>{% endif %}
+    {{ notification_item(n) }}
+  {% endfor %}
+</ul>
+{% else %}
+<div class="empty"><span class="empty-icon">🔔</span><p>No notifications here.</p><p class="muted small">Route, stop, timing and bus changes will appear here with the reason.</p></div>
+{% endif %}

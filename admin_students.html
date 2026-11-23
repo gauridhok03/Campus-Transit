@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Student management{% endblock %}
+{% block content %}
+{% include "_admin_nav.html" %}
+<section class="panel"><h1>Student management</h1><div class="table-wrap"><table><thead><tr><th>Student</th><th>Academic details</th><th>Route assignment</th><th>Action</th></tr></thead><tbody>
+{% for s in students %}<tr><td>{{ s.full_name }}<br><span class="muted small">{{ s.prn }} · {{ s.email }}</span></td><td>{{ s.department }}<br>{{ s.year }} / {{ s.division }}<br>{{ s.mobile }}</td>
+<td><form method="post" class="form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="student_id" value="{{ s.id }}"><select name="route_code"><option value="">Unassigned</option>{% for r in routes %}<option value="{{ r.route_code }}" {{ 'selected' if r.route_code==s.route_code else '' }}>{{ r.route_code }} · {{ r.name }}</option>{% endfor %}</select><button class="btn btn-small">Save route</button></form></td>
+<td><form method="post" action="{{ url_for('admin_student_delete',student_id=s.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-small btn-danger">Delete</button></form></td></tr>{% else %}<tr><td colspan="4">No students registered.</td></tr>{% endfor %}
+</tbody></table></div></section>
+{% endblock %}

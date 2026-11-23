@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Student Dashboard{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="hero-text">
+    <span class="eyebrow">🎓 Campus Transit</span>
+    <h1>Your ride to college,<br>always on time.</h1>
+    <p>Search your area, see every stop and timing, watch your bus move live and get alerts the moment a route changes.</p>
+    <form class="search" method="get" action="{{ url_for('student_dashboard') }}" role="search">
+      <span class="search-icon">🔍</span>
+      <input type="search" id="route-search" name="q" value="{{ q }}" maxlength="30" autocomplete="off"
+             placeholder="Search R4, your area or a stop" aria-label="Search routes">
+      <button class="btn btn-accent" type="submit">Search</button>
+    </form>
+    <div class="quick">
+      <span>Popular:</span>
+      {% for area in popular %}<button type="button" class="qchip" data-fill="{{ area }}">{{ area }}</button>{% endfor %}
+    </div>
+    <div class="hero-actions">
+      <a class="btn btn-accent" href="{{ url_for('live_map') }}">🗺 Live map of all buses</a>
+      <a class="btn btn-ghost" href="{{ url_for('notifications_page') }}">🔔 Notifications</a>
+      {% if student %}
+        <a class="btn btn-ghost" href="{{ url_for('student_bus_pass') }}">🎫 My bus pass</a>
+        <a class="btn btn-ghost" href="{{ url_for('student_complaints') }}">📝 Feedback / complaints</a>
+      {% else %}
+        <a class="btn btn-ghost" href="{{ url_for('user_login', role='student') }}">Student login</a>
+        <a class="btn btn-ghost" href="{{ url_for('student_register') }}">Register</a>
+      {% endif %}
+    </div>
+    {% if student %}<p class="muted small">Signed in as {{ student.full_name }}{% if student.route_id %} · Assigned route linked to your account{% endif %}</p>{% endif %}
+    <div class="hero-stats">
+      <div><b>{{ stats.routes }}</b><span>Routes</span></div>
+      <div><b>{{ stats.stops }}</b><span>Stops covered</span></div>
+      <div><b>{{ stats.live }}</b><span>Buses live</span></div>
+    </div>
+  </div>
+  <svg class="hero-art" viewBox="0 0 360 240" aria-hidden="true">
+    <circle cx="290" cy="60" r="34" fill="#ffd36b" opacity=".95"/>
+    <g fill="#ffffff" opacity=".16"><rect x="20" y="90" width="44" height="110" rx="4"/><rect x="72" y="60" width="52" height="140" rx="4"/><rect x="132" y="104" width="40" height="96" rx="4"/><rect x="250" y="84" width="48" height="116" rx="4"/></g>
+    <rect x="0" y="196" width="360" height="44" fill="#0b2a3d" opacity=".55"/>
+    <g stroke="#fff" stroke-width="3" stroke-dasharray="14 12" opacity=".7"><line x1="0" y1="220" x2="360" y2="220"/></g>
+    <g class="bus-art">
+      <rect x="86" y="132" width="186" height="64" rx="14" fill="#f5a623"/>
+      <rect x="86" y="132" width="186" height="14" rx="7" fill="#e2900f"/>
+      <g fill="#dff6ff"><rect x="100" y="150" width="34" height="26" rx="5"/><rect x="142" y="150" width="34" height="26" rx="5"/><rect x="184" y="150" width="34" height="26" rx="5"/><rect x="226" y="150" width="34" height="38" rx="5"/></g>
+      <circle cx="132" cy="198" r="15" fill="#12263f"/><circle cx="132" cy="198" r="6" fill="#cfd8e3"/>
+      <circle cx="228" cy="198" r="15" fill="#12263f"/><circle cx="228" cy="198" r="6" fill="#cfd8e3"/>
+    </g>
+  </svg>
+</section>
+
+<div class="grid-main">
+  <section>
+    <div class="section-head">
+      <h2>Available routes <span class="live-pill"><i class="pulse"></i>Live</span></h2>
+      <span class="muted small">Every route runs both ways on the same bus</span>
+    </div>
+    <div id="route-list" data-poll-url="{{ url_for('partial_routes') }}" data-poll-search="#route-search" data-poll-param="q">
+      {% include "_route_cards.html" %}
+    </div>
+  </section>
+  <aside>
+    <div class="section-head"><h2>🔔 Latest updates</h2><a href="{{ url_for('notifications_page') }}">View all</a></div>
+    <div id="notif-panel" data-poll-url="{{ url_for('partial_notifications', limit=5) }}">
+      {% include "_notification_list.html" %}
+    </div>
+  </aside>
+</div>
+{% endblock %}

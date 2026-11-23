@@ -1,0 +1,22 @@
+{% set loc = route.location %}
+<div id="loc-data" data-status="{{ loc.status }}" data-label="{{ loc.label }}" data-bus="{{ route.bus_number }}"
+     data-near="{{ loc.near or '' }}" data-live="{{ 'true' if loc.is_live else 'false' }}"
+     data-trip-status="{{ loc.trip_status }}"
+     data-lat="{{ loc.latitude if loc.latitude is not none else '' }}" data-lon="{{ loc.longitude if loc.longitude is not none else '' }}"></div>
+<div class="loc-status loc-{{ loc.status }}">
+  <span class="badge badge-{{ loc.status }}"><i class="pulse"></i>{{ 'LIVE – Location Sharing Active' if loc.is_live and loc.status == 'current' else loc.label }}</span>
+  {% if loc.simulated %}<span class="sim-tag">SIMULATED - not real GPS</span>{% endif %}
+  {% if loc.status != 'unavailable' %}<span class="mode-tag">{{ '● GPS tracking' if loc.is_live else ('● Live simulation' if loc.auto else '✋ Manual position') }}</span>{% endif %}
+</div>
+{% if loc.status == 'unavailable' %}
+  <div class="alert alert-error">Bus location unavailable.</div>
+{% elif loc.status == 'stale' %}
+  <div class="alert alert-warning">⚠ {{ loc.message }}</div>
+{% else %}
+  <div class="alert alert-success">🚌 {% if loc.is_live %}<strong>{{ route.bus_number }}</strong> is sharing its GPS location live. {% elif loc.trip_status == 'Trip Ended' %}<strong>{{ route.bus_number }}</strong> trip ended; showing its last shared position. {% elif loc.near %}<strong>{{ route.bus_number }}</strong> is near <strong>{{ loc.near }}</strong>, heading {{ loc.heading }}. {% endif %}{{ loc.message }}</div>
+{% endif %}
+<dl class="facts">
+  <div><dt>Latitude</dt><dd>{{ '%.5f'|format(loc.latitude) if loc.latitude is not none else '—' }}</dd></div>
+  <div><dt>Longitude</dt><dd>{{ '%.5f'|format(loc.longitude) if loc.longitude is not none else '—' }}</dd></div>
+  <div><dt>Last updated</dt><dd>{% if loc.last_updated %}{{ loc.last_updated|pretty_dt }} <span class="muted small">({{ loc.last_updated|time_ago }})</span>{% else %}—{% endif %}</dd></div>
+</dl>

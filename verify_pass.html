@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Verify bus pass{% endblock %}
+{% block content %}
+{% include "_admin_nav.html" %}
+<section class="panel narrow"><h1>Verify student bus pass</h1><form method="post" class="form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Scan / enter QR token</label><input id="qr-token" name="token" required><button class="btn btn-primary">Verify pass</button></form>
+<button class="btn btn-small" type="button" id="start-scan">Use camera scanner</button><video id="qr-video" width="100%" muted playsinline hidden></video>
+<p class="muted small" id="scan-status">Camera scanning requires a supported browser and HTTPS or localhost.</p>
+<script>
+(() => {
+ const button=document.getElementById('start-scan'), video=document.getElementById('qr-video'), field=document.getElementById('qr-token'), note=document.getElementById('scan-status');
+ if (!button || !('BarcodeDetector' in window) || !navigator.mediaDevices?.getUserMedia) { button.disabled=true; return; }
+ button.addEventListener('click', async () => {
+   try {
+     const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+     video.srcObject=stream; video.hidden=false; await video.play();
+     const detector=new BarcodeDetector({formats:['qr_code']});
+     const scan=async()=>{ if(video.hidden) return; try { const codes=await detector.detect(video); if(codes.length){ field.value=codes[0].rawValue; stream.getTracks().forEach(t=>t.stop()); video.hidden=true; note.textContent='QR code captured. Submit Verify pass.'; return; } }catch(e){} requestAnimationFrame(scan); };
+     note.textContent='Point the camera at the student QR code.'; scan();
+   } catch(e) { note.textContent='Camera permission unavailable. Enter the token manually.'; }
+ });
+})();
+</script>
+{% if result %}<div class="alert {{ 'alert-success' if result.valid else 'alert-error' }}">{% if result.valid %}Valid pass – {{ result.full_name }} ({{ result.prn }}), route {{ result.route_code or 'Not assigned' }}. Valid until {{ result.valid_until }}.{% else %}Invalid or expired bus pass.{% endif %}</div>{% endif %}
+</section>
+{% endblock %}

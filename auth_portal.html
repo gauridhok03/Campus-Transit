@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Welcome · Choose your portal{% endblock %}
+{% block content %}
+<section class="auth-welcome">
+  <div class="auth-welcome-copy">
+    <span class="auth-kicker"><span class="auth-kicker-dot"></span> CAMPUS TRANSPORTATION · ONE CONNECTED CAMPUS</span>
+    <h1>Your campus journey,<br><em>made effortless.</em></h1>
+    <p>Find your bus, follow your route and stay updated — all in one place. Choose how you want to continue.</p>
+    <div class="auth-trust-row"><span>✦ Simple route discovery</span><span>✦ Timely service updates</span><span>✦ One connected experience</span></div>
+  </div>
+  <div class="auth-illustration" aria-hidden="true">
+    <div class="auth-orbit orbit-one"></div><div class="auth-orbit orbit-two"></div>
+    <div class="auth-sun"></div><div class="auth-road"><span></span><span></span><span></span></div>
+    <div class="auth-bus"><div class="auth-bus-sign">CAMPUS</div><div class="auth-bus-windows"><i></i><i></i><i></i></div><div class="auth-bus-front"></div><b class="wheel wheel-left"></b><b class="wheel wheel-right"></b></div>
+    <div class="auth-pin pin-a">⌖ <small>YOUR STOP</small></div><div class="auth-pin pin-b">✦ <small>ON THE WAY</small></div>
+  </div>
+</section>
+
+<section class="auth-choice-heading">
+  <div><span class="auth-section-label">GET STARTED</span><h2>Choose your portal</h2><p>Sign in to continue to your personalized workspace.</p></div>
+  <span class="auth-secure-note">🔒 Secure role-based access</span>
+</section>
+
+<div class="role-grid">
+  <article class="role-card role-student">
+    <div class="role-card-top"><span class="role-icon">🎓</span><span class="role-number">01 / STUDENT</span></div>
+    <h3>Student</h3><p>Explore bus routes, check timings, track your bus and manage your digital pass.</p>
+    <ul><li>Browse all available routes</li><li>Choose your preferred bus route</li><li>Get service alerts and updates</li></ul>
+    <a class="role-cta" href="{{ url_for('user_login', role='student') }}">Student login <span>→</span></a>
+    <div class="role-secondary">New to Campus Transit? <a href="{{ url_for('student_register') }}">Create an account</a></div>
+  </article>
+  <article class="role-card role-driver">
+    <div class="role-card-top"><span class="role-icon">🚌</span><span class="role-number">02 / DRIVER</span></div>
+    <h3>Driver</h3><p>Access your assigned bus, review your daily schedule and keep your bus location updated.</p>
+    <ul><li>View assigned route and stops</li><li>Check daily departure timings</li><li>Update simulated bus location</li></ul>
+    <a class="role-cta" href="{{ url_for('user_login', role='driver') }}">Driver login <span>→</span></a>
+    <div class="role-secondary">Driver accounts are provided by the transport admin.</div>
+  </article>
+  <article class="role-card role-admin">
+    <div class="role-card-top"><span class="role-icon">🛡️</span><span class="role-number">03 / ADMIN</span></div>
+    <h3>Administrator</h3><p>Manage campus transport operations, routes, schedules, drivers and student support.</p>
+    <ul><li>Manage buses, routes and drivers</li><li>Publish alerts and schedule updates</li><li>Review student complaints</li></ul>
+    <a class="role-cta" href="{{ url_for('admin_login') }}">Admin login <span>→</span></a>
+    <div class="role-secondary">Authorized transport administrators only.</div>
+  </article>
+</div>
+<div class="auth-bottom-note"><span>✧</span> A smoother commute starts here. <span>✧</span></div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% from "_macros.html" import status_badge %}
+{% if routes %}
+<div class="cards">
+  {% for r in routes %}
+  <article class="card route-card" style="--rc: {{ r.color }}">
+    <div class="rc-top">
+      <span class="route-badge">{{ r.route_code }}</span>
+      <span class="dir dir-both">⇄ Runs both ways</span>
+      {{ status_badge(r.location) }}
+      {% if r.service_status and r.service_status != 'Active' %}<span class="chip">{{ r.service_status }}</span>{% endif %}
+    </div>
+    <h3>{{ r.name }}</h3>
+    <div class="mini-path">
+      <span class="mp-end">{{ r.start_point }}</span>
+      <span class="track">{% for s in r.stops %}<i></i>{% endfor %}</span>
+      <span class="mp-end">{{ r.destination }}</span>
+    </div>
+    <div class="chips"><span class="chip chip-strong">{{ r.stops|length }} stops</span>{% for s in r.stops[1:-1][:3] %}<span class="chip">{{ s.stop_name }}</span>{% endfor %}</div>
+    <div class="trips">
+      <div class="trip trip-to"><span>🏠 → 🎓 To college</span><b>{{ r.trips.to.departure|pretty_time }}</b><small>arrives {{ r.trips.to.arrives|pretty_time }}</small></div>
+      <div class="trip trip-from"><span>🎓 → 🏠 From college</span><b>{{ r.trips.from.departure|pretty_time }}</b><small>arrives {{ r.trips.from.arrives|pretty_time }}</small></div>
+    </div>
+    <div class="rc-bottom">
+      <span class="bus-tag">🚌 {{ r.bus_number }}{% if r.location.is_live and r.location.status == 'current' %} · LIVE{% elif r.location.near %} · near {{ r.location.near }}{% endif %}
+        {% if r.location.latitude is not none %}<small class="route-coordinates">{{ '%.5f'|format(r.location.latitude) }}, {{ '%.5f'|format(r.location.longitude) }}</small>{% endif %}
+      </span>
+      <a class="btn btn-primary btn-small" href="{{ url_for('route_details', route_id=r.route_code) }}">Stops &amp; live bus →</a>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% elif q %}
+<div class="empty"><span class="empty-icon">🔍</span>
+  <p><strong>Route '{{ q }}' not found.</strong></p>
+  <p class="muted">No active route matches your search. Check the route number (for example R1, R4 or R10) or try your area / stop name.</p>
+</div>
+{% else %}
+<div class="empty"><span class="empty-icon">🚏</span><p>No routes in this view right now.</p></div>
+{% endif %}

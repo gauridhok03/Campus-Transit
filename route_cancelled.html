@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Route unavailable{% endblock %}
+{% block content %}
+<section class="panel">
+  <span class="eyebrow">Service update</span><h1>{{ route.route_code }} · {{ route.name }}</h1>
+  <div class="alert alert-error">This bus service is currently cancelled or inactive. {{ route.status_reason or 'Please check the latest notifications.' }}</div>
+  <h2>Alternative route suggestions</h2>
+  {% if alternatives %}
+    <div class="route-grid">{% for item in alternatives %}
+      <article class="route-card"><h3>{{ item.route.route_code }} · {{ item.route.name }}</h3><p>Bus {{ item.route.bus_number }}</p><p>Shared stops: {{ item.overlap|join(', ') }}</p><p>Departure: {{ item.route.to_departure_time|pretty_time }}</p><a class="btn btn-small" href="{{ url_for('route_details', route_id=item.route.route_code) }}">View route</a></article>
+    {% endfor %}</div>
+  {% else %}<p>No matching alternative route was found. Please contact the transport office.</p>{% endif %}
+  <a class="back" href="{{ url_for('student_dashboard') }}">← All routes</a>
+</section>
+{% endblock %}

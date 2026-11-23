@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, notification_item %}
+{% block title %}Admin dashboard{% endblock %}
+{% block content %}
+{% include "_admin_nav.html" %}
+<div class="section-head">
+  <h1>Admin dashboard</h1>
+  <form method="post" action="{{ url_for('admin_resume_all') }}" class="inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn" type="submit" title="Demo helper: every simulated bus goes live again (status Current)">▶ Resume live simulation (all buses)</button>
+  </form>
+</div>
+
+<div class="stats">
+  <div class="stat s1"><span>{{ stats.active }}</span>Active routes</div>
+  <div class="stat s2"><span>{{ stats.live }}</span>Buses Current</div>
+  <div class="stat s3"><span>{{ stats.stale }}</span>Buses Stale</div>
+  <div class="stat s4"><span>{{ stats.unavailable }}</span>Location missing</div>
+  <div class="stat s5"><span>{{ stats.notifications }}</span>Notifications sent</div>
+  <div class="stat s6"><span>{{ stats.inactive }}</span>Inactive routes</div>
+  <div class="stat s1"><span>{{ stats.students }}</span>Registered students</div>
+  <div class="stat s2"><span>{{ stats.drivers }}</span>Drivers</div>
+  <div class="stat s3"><span>{{ stats.complaints }}</span>Pending complaints</div>
+  <div class="stat s4"><span>{{ stats.buses }}</span>Total buses</div>
+  <div class="stat s5"><span>{{ stats.cancelled }}</span>Cancelled / inactive</div>
+</div>
+
+<section class="panel">
+  <h2>Routes</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Route</th><th>Name</th><th>Bus</th><th>Home → College</th><th>College → Home</th><th>Stops</th><th>State</th><th>Bus location</th><th>Actions</th></tr></thead>
+      <tbody>
+      {% for r in routes %}
+        <tr class="{{ '' if r.is_active else 'row-inactive' }}">
+          <td><span class="route-badge small" style="--rc: {{ r.color }}">{{ r.route_code }}</span></td>
+          <td>{{ r.name }}<br><span class="muted small">{{ r.start_point }} ⇄ {{ r.destination }}</span></td>
+          <td>{{ r.bus_number }}</td>
+          <td>{{ r.to_departure_time|pretty_time }}</td>
+          <td>{{ r.departure_time|pretty_time }}</td>
+          <td>{{ r.stops|length }}</td>
+          <td>{{ r.service_status or ('Active' if r.is_active else 'Inactive') }}</td>
+          <td data-admin-location="{{ r.route_code }}">
+            <span class="badge badge-{{ r.location.status }}">{{ 'LIVE – Location Sharing Active' if r.location.is_live and r.location.status == 'current' else r.location.label }}</span><br>
+            <span class="muted small" data-admin-location-detail>
+              {% if r.location.latitude is not none %}{{ '%.5f'|format(r.location.latitude) }}, {{ '%.5f'|format(r.location.longitude) }}{% else %}{{ r.location.trip_status }}{% endif %}
+            </span>
+          </td>
+          <td class="actions">
+            <a class="btn btn-small" href="{{ url_for('admin_route_edit', route_id=r.route_code) }}">Edit</a>
+            <form method="post" action="{{ url_for('admin_location', route_id=r.route_code) }}" class="inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="action" value="make_stale">
+              <input type="hidden" name="next" value="{{ url_for('admin_dashboard') }}">
+              <button class="btn btn-small" type="submit" title="Demo: make this bus's location 10 minutes old (Stale)">⏱ Stale</button>
+            </form>
+            <form method="post" action="{{ url_for('admin_location', route_id=r.route_code) }}" class="inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="action" value="clear">
+              <input type="hidden" name="next" value="{{ url_for('admin_dashboard') }}">
+              <button class="btn btn-small btn-danger" type="submit" title="Demo: remove this bus's location (Unavailable)">✕ Missing</button>
+            </form>
+            <form method="post" action="{{ url_for('admin_service_status', route_id=r.route_code) }}" class="form">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <select name="status" aria-label="Bus service status">
+                <option value="Delayed">Mark delayed</option>
+                <option value="Cancelled">Cancel bus</option>
+                <option value="Active">Reactivate</option>
+              </select>
+              <input name="reason" placeholder="Reason (required)" maxlength="200" required>
+              <button class="btn btn-small" type="submit">Update service</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="section-head"><h2>Recent changes (history)</h2><a href="{{ url_for('notifications_page') }}">All notifications →</a></div>
+  {% if notifications %}
+  <ul class="notif-list">{% for n in notifications %}{{ notification_item(n) }}{% endfor %}</ul>
+  {% else %}<div class="empty"><p>No changes recorded yet.</p></div>{% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Route {{ route.route_code }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">{% endblock %}
+{% block content %}
+<a class="back" href="{{ url_for('student_dashboard') }}">← All routes</a>
+
+<section class="panel" id="route-info" data-poll-url="{{ url_for('partial_route_info', route_id=route.route_code) }}">
+  {% include "_route_info.html" %}
+</section>
+{% if session.get('student_id') %}
+<section class="route-selection-panel">
+  <div><span class="auth-section-label">YOUR CAMPUS ROUTE</span><h2>{{ 'This route is in your profile' if selected_route else 'Travel on this route?' }}</h2><p>{{ 'You have selected this route. You can change it anytime by choosing another route.' if selected_route else 'Add this route to your student profile to keep it as your preferred campus bus route.' }}</p></div>
+  {% if not selected_route %}<form method="post" action="{{ url_for('select_student_route', route_code=route.route_code) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="auth-submit route-select-btn" type="submit">Choose this bus route <span>→</span></button></form>{% else %}<span class="route-selected-badge">✓ Selected route</span>{% endif %}
+</section>
+{% else %}
+<section class="route-selection-panel"><div><span class="auth-section-label">MAKE IT YOUR ROUTE</span><h2>Sign in to choose this bus</h2><p>Log in as a student to save this route to your profile.</p></div><a class="auth-submit route-select-btn" href="{{ url_for('user_login', role='student') }}">Student login <span>→</span></a></section>
+{% endif %}
+
+<section class="panel">
+  <h2>📍 Live bus location</h2>
+  {% if route.service_status and route.service_status != 'Active' %}<div class="alert alert-warning">Bus status: {{ route.service_status }}. {{ route.status_reason or '' }}</div>{% endif %}
+  <p class="muted">Estimated arrival: {% if eta_minutes %}<strong>approximately {{ eta_minutes }} minutes</strong> (simulated estimate){% else %}Unavailable until the bus location is current{% endif %}</p>
+  <div id="location-box" data-poll-url="{{ url_for('partial_route_location', route_id=route.route_code) }}" data-after-update="map">
+    {% include "_location_card.html" %}
+  </div>
+  <div id="map" class="map" hidden></div>
+  <p id="map-note" class="muted small" hidden></p>
+  <script type="application/json" id="route-geo">{{ {'stops': route.geo, 'color': route.color} | tojson }}</script>
+</section>
+
+{% if driver %}
+<section class="panel">
+  <h2>🧑‍✈️ Assigned driver</h2>
+  <p><strong>{{ driver.full_name }}</strong> · {{ driver.driver_code }}</p>
+  <p>Contact: {{ driver.mobile }} · {{ 'Available' if driver.is_available else 'Unavailable' }}</p>
+</section>
+{% endif %}
+
+<section class="panel">
+  <h2>🔔 Changes to this route</h2>
+  <div id="route-notifs" data-poll-url="{{ url_for('partial_notifications', route=route.route_code, limit=20) }}">
+    {% include "_notification_list.html" %}
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>{% endblock %}

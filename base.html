@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Home{% endblock %} · Campus Transit</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><text y=%27.9em%27 font-size=%2790%27>🚌</text></svg>">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  {% set auth_page = unauthenticated_portal or request.endpoint in ('user_login', 'admin_login', 'student_register', 'forgot_password') %}
+  {% if auth_page %}
+  <header class="topbar">
+    <div class="container nav">
+      <a class="brand" href="{{ url_for('student_dashboard') }}"><span class="brand-icon">🚌</span> Campus Transit</a>
+    </div>
+  </header>
+  {% else %}
+  <header class="topbar">
+    <div class="container nav">
+      <a class="brand" href="{{ url_for('student_dashboard') }}"><span class="brand-icon">🚌</span> Campus Transit</a>
+      <nav>
+        <a href="{{ url_for('student_dashboard') }}" class="{{ 'active' if request.endpoint in ('student_dashboard', 'route_details') else '' }}">Routes</a>
+        <a href="{{ url_for('live_map') }}" class="{{ 'active' if request.endpoint == 'live_map' else '' }}">🗺 Live map</a>
+        <a href="{{ url_for('notifications_page') }}" class="bell {{ 'active' if request.endpoint == 'notifications_page' else '' }}" id="bell" title="Notifications">🔔<span class="bell-count" id="bell-count" hidden>0</span></a>
+        {% if session.get('admin_id') %}
+          <a href="{{ url_for('admin_dashboard') }}" class="admin-link {{ 'active' if request.endpoint and request.endpoint.startswith('admin_') else '' }}">⚙ Admin</a>
+          <form method="post" action="{{ url_for('admin_logout') }}" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="link-btn" type="submit">Log out</button>
+          </form>
+        {% elif session.get('student_id') %}
+          <a href="{{ url_for('student_bus_pass') }}">Bus pass</a>
+          <a href="{{ url_for('student_profile') }}">My profile</a>
+          <form method="post" action="{{ url_for('user_logout') }}" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="link-btn" type="submit">Log out</button>
+          </form>
+        {% elif session.get('driver_id') %}
+          <a href="{{ url_for('driver_dashboard') }}">Driver dashboard</a>
+          <form method="post" action="{{ url_for('user_logout') }}" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="link-btn" type="submit">Log out</button>
+          </form>
+        {% else %}
+          <a href="{{ url_for('user_login', role='student') }}">Student login</a>
+          <a href="{{ url_for('student_register') }}">Register</a>
+          <a href="{{ url_for('admin_login') }}" class="admin-link {{ 'active' if request.endpoint == 'admin_login' else '' }}">Admin</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+  {% endif %}
+  <div id="toasts" aria-live="polite"></div>
+
+  <main class="container">
+    <div id="net-banner" class="alert alert-error" role="alert" hidden>
+      Cannot reach the server. Showing the last loaded data - retrying automatically.
+    </div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}" role="{{ 'alert' if category == 'error' else 'status' }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+
+  {% if not auth_page %}
+  <footer class="footer">
+    <div class="container">
+      <p class="muted" id="live-note" hidden>Live updates every 10 seconds · last refreshed <span id="last-refreshed">-</span></p>
+    </div>
+  </footer>
+  {% endif %}
+  {% block scripts %}{% endblock %}
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Administrator sign in{% endblock %}
+{% block content %}
+<div class="auth-form-layout">
+  <section class="auth-form-aside admin-aside">
+    <a class="auth-back" href="{{ url_for('student_dashboard') }}">← All portals</a>
+    <span class="auth-kicker"><span class="auth-kicker-dot"></span> CAMPUS TRANSIT · CONTROL CENTER</span>
+    <div class="auth-form-aside-icon">🛡️</div>
+    <h1>Keep campus moving.</h1>
+    <p>Manage routes, schedules, buses, drivers and student support from your transport control center.</p>
+    <div class="auth-aside-bottom">✦ Authorized administrator access</div>
+  </section>
+  <section class="auth-form-card">
+    <div class="auth-form-head"><span class="auth-section-label">ADMINISTRATOR PORTAL</span><h2>Admin sign in</h2><p>Use your authorized administrator credentials to continue.</p></div>
+    <div class="auth-role-switch"><a href="{{ url_for('user_login', role='student') }}">🎓 Student</a><a href="{{ url_for('user_login', role='driver') }}">🚌 Driver</a><a class="selected" href="{{ url_for('admin_login') }}">🛡 Admin</a></div>
+    <form method="post" action="{{ url_for('admin_login') }}" class="form auth-fields">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label for="username">Admin username</label><input id="username" name="username" type="text" value="{{ username }}" autocomplete="username" autofocus required placeholder="Enter admin username">
+      <label for="admin-password">Password</label><div class="auth-password-wrap"><input id="admin-password" name="password" type="password" autocomplete="current-password" required placeholder="Enter your password"><button type="button" class="password-toggle" onclick="const p=document.getElementById('admin-password');p.type=p.type==='password'?'text':'password';this.textContent=p.type==='password'?'Show':'Hide'">Show</button></div>
+      <div class="auth-form-options"><label class="auth-check"><input type="checkbox" name="remember_me" value="1"> Remember me</label></div>
+      <button class="auth-submit" type="submit">Enter admin dashboard <span>→</span></button>
+    </form>
+    <div class="auth-register-prompt">Admin accounts are managed by the application owner.</div>
+    <div class="auth-form-foot">🔒 Restricted access · Activity is for authorized admins only.</div>
+  </section>
+</div>
+{% endblock %}

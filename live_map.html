@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Live map{% endblock %}
+{% block head %}<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">{% endblock %}
+{% block content %}
+<div class="section-head">
+  <h1>🗺 Live bus map <span class="live-pill"><i class="pulse"></i>Live</span></h1>
+  <span class="sim-tag">SIMULATED positions - not real GPS</span>
+</div>
+<div class="live-layout">
+  <div>
+    <div id="live-map" class="map map-big"></div>
+    <p id="live-note-map" class="muted small" hidden>The map could not be loaded (internet needed for the map). The list on the right still shows every bus.</p>
+  </div>
+  <div class="bus-list" id="bus-list">
+    {% for b in buses %}
+    <a class="bus-row" href="{{ url_for('route_details', route_id=b.route) }}" data-route="{{ b.route }}" style="--rc: {{ b.color }}">
+      <span class="route-badge small">{{ b.route }}</span>
+      <div><strong>{{ b.name }}</strong>
+        <div class="muted small">🚌 {{ b.bus }}{% if b.near %} · near {{ b.near }}{% endif %}</div></div>
+      <span class="badge badge-{{ b.status }}"><i class="pulse"></i>{{ b.label }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+<script type="application/json" id="buses-data">{{ buses | tojson }}</script>
+{% endblock %}
+{% block scripts %}<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>{% endblock %}

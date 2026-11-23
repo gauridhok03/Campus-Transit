@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ role|title }} sign in{% endblock %}
+{% block content %}
+<div class="auth-form-layout">
+  <section class="auth-form-aside">
+    <a class="auth-back" href="{{ url_for('student_dashboard') }}">← All portals</a>
+    <span class="auth-kicker"><span class="auth-kicker-dot"></span> CAMPUS TRANSIT</span>
+    <div class="auth-form-aside-icon">{{ '🎓' if role == 'student' else '🚌' }}</div>
+    <h1>{{ 'Welcome back, student.' if role == 'student' else 'Welcome back, driver.' }}</h1>
+    <p>{{ 'Your routes, bus timings and campus travel updates are just a sign in away.' if role == 'student' else 'Your assigned bus, route and daily schedule are waiting for you.' }}</p>
+    <div class="auth-aside-bottom">✦ Travel smarter. Stay connected.</div>
+  </section>
+  <section class="auth-form-card">
+    <div class="auth-form-head"><span class="auth-section-label">YOUR ACCOUNT</span><h2>Sign in to continue</h2><p>Enter your registered details to access your {{ role }} workspace.</p></div>
+    <div class="auth-role-switch"><a class="{{ 'selected' if role == 'student' else '' }}" href="{{ url_for('user_login', role='student') }}">🎓 Student</a><a class="{{ 'selected' if role == 'driver' else '' }}" href="{{ url_for('user_login', role='driver') }}">🚌 Driver</a><a href="{{ url_for('admin_login') }}">🛡 Admin</a></div>
+    <form method="post" class="form auth-fields">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="role" value="{{ role }}">
+      <label for="identifier">{{ 'College email or PRN' if role == 'student' else 'Driver email or Driver ID' }}</label>
+      <input id="identifier" name="identifier" required autocomplete="username" placeholder="{{ 'Enter your college email or PRN' if role == 'student' else 'Enter your email or driver ID' }}">
+      <label for="login-password">Password</label>
+      <div class="auth-password-wrap"><input id="login-password" type="password" name="password" required autocomplete="current-password" placeholder="Enter your password"><button type="button" class="password-toggle" onclick="const p=document.getElementById('login-password');p.type=p.type==='password'?'text':'password';this.textContent=p.type==='password'?'Show':'Hide'">Show</button></div>
+      <div class="auth-form-options"><label class="auth-check"><input type="checkbox" name="remember_me" value="1"> Remember me</label>{% if role == 'student' %}<a href="{{ url_for('forgot_password') }}">Forgot password?</a>{% endif %}</div>
+      <button class="auth-submit" type="submit">Sign in as {{ role }} <span>→</span></button>
+    </form>
+    {% if role == 'student' %}<div class="auth-register-prompt">Don't have a student account? <a href="{{ url_for('student_register') }}">Register now</a></div>{% else %}<div class="auth-register-prompt">Need access? Contact your transport administrator.</div>{% endif %}
+    <div class="auth-form-foot">🔒 Your account is protected with secure sign-in.</div>
+  </section>
+</div>
+{% endblock %}

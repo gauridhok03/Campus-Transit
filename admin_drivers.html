@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Driver management{% endblock %}
+{% block content %}
+{% include "_admin_nav.html" %}
+<section class="panel narrow-wide"><h1>Driver management</h1>
+<form method="post" class="form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<div class="row2"><div><label>Driver ID</label><input name="driver_code" required></div><div><label>Full name</label><input name="full_name" required></div></div>
+<div class="row2"><div><label>Email</label><input type="email" name="email" required></div><div><label>Mobile</label><input name="mobile" required></div></div>
+<div class="row2"><div><label>Temporary password (8+ characters)</label><input type="password" name="password" required minlength="8"></div>
+<div><label>Assign route</label><select name="route_code"><option value="">Unassigned</option>{% for r in routes %}<option value="{{ r.route_code }}">{{ r.route_code }} · {{ r.name }}</option>{% endfor %}</select></div></div>
+<button class="btn btn-primary" type="submit">Create driver account</button></form></section>
+<section class="panel"><h2>Registered drivers</h2><div class="table-wrap"><table><thead><tr><th>Driver ID</th><th>Name / Contact</th><th>Assigned route</th><th>Availability</th><th>Actions</th></tr></thead><tbody>
+{% for d in drivers %}<tr><td colspan="5">
+<form method="post" class="form">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="update"><input type="hidden" name="driver_id" value="{{ d.id }}">
+<div class="row2"><div><label>Driver ID</label><input name="driver_code" value="{{ d.driver_code }}" required></div><div><label>Name</label><input name="full_name" value="{{ d.full_name }}" required></div></div>
+<div class="row2"><div><label>Email</label><input name="email" type="email" value="{{ d.email }}" required></div><div><label>Mobile</label><input name="mobile" value="{{ d.mobile }}" required></div></div>
+<div class="row2"><div><label>Assigned route</label><select name="route_code"><option value="">Unassigned</option>{% for r in routes %}<option value="{{ r.route_code }}" {{ 'selected' if r.route_code==d.route_code else '' }}>{{ r.route_code }}</option>{% endfor %}</select></div><div><label>Availability</label><select name="is_available"><option value="1" {{ 'selected' if d.is_available else '' }}>Available</option><option value="0" {{ 'selected' if not d.is_available else '' }}>Unavailable</option></select></div></div>
+<label>New password (leave blank to keep current)</label><input type="password" name="password" minlength="8">
+<button class="btn btn-small">Save driver</button>
+</form>
+<form method="post" action="{{ url_for('admin_driver_delete',driver_id=d.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-small btn-danger">Delete driver</button></form>
+</td></tr>{% else %}<tr><td colspan="5">No drivers created yet.</td></tr>{% endfor %}
+</tbody></table></div></section>
+{% endblock %}

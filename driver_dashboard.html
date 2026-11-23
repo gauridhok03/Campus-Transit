@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Driver Dashboard{% endblock %}
+{% block head %}{% if route %}<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">{% endif %}{% endblock %}
+{% block content %}
+<section class="driver-hero">
+  <div>
+    <span class="driver-eyebrow">DRIVER WORKSPACE</span>
+    <h1>Driver Dashboard</h1>
+    <p>Welcome, <strong>{{ driver.full_name }}</strong> · Driver ID {{ driver.driver_code }}</p>
+    {% if route %}
+    <div class="driver-route-summary">
+      <span class="driver-route-chip">{{ route.route_code }}</span>
+      <strong>{{ route.bus_number }}</strong>
+      <span>{{ route.name }}</span>
+    </div>
+    {% endif %}
+  </div>
+  <div class="driver-trip-status">
+    <span class="muted small">CURRENT TRIP</span>
+    <strong id="driver-trip-status">{{ route.location.trip_status if route else 'Not Started' }}</strong>
+  </div>
+</section>
+
+{% if route %}
+<div class="driver-dashboard-grid">
+  <section class="panel driver-control-panel">
+    <div class="section-head">
+      <div><span class="auth-section-label">TRIP CONTROL</span><h2>Live location tracking</h2></div>
+      <span id="driver-live-badge" class="driver-live-badge {{ 'is-active' if route.location.is_live and route.location.status == 'current' else '' }}">
+        <i></i><span id="driver-live-text">{{ 'LIVE – Location Sharing Active' if route.location.is_live and route.location.status == 'current' else route.location.trip_status }}</span>
+      </span>
+    </div>
+    <p class="muted">Share your bus location with students and the transport administrator while this trip is active.</p>
+    <div class="driver-actions" data-location-url="{{ url_for('driver_location_update') }}" data-csrf="{{ csrf_token() }}">
+      <button id="driver-start-tracking" class="btn btn-primary driver-start" type="button">● Start Live Location</button>
+      <button id="driver-stop-tracking" class="btn btn-danger driver-stop" type="button" {{ '' if route.location.is_live else 'disabled' }}>■ Stop Trip</button>
+    </div>
+    <p id="driver-location-message" class="driver-feedback" role="status" aria-live="polite">
+      {{ 'Your location is being shared.' if route.location.is_live else 'Start your trip to begin sharing your GPS location.' }}
+    </p>
+    <dl class="facts facts-big driver-facts">
+      <div><dt>Assigned bus</dt><dd>{{ route.bus_number }}</dd></div>
+      <div><dt>Assigned route</dt><dd>{{ route.route_code }} · {{ route.name }}</dd></div>
+      <div><dt>Current location</dt><dd id="driver-current-location">
+        {% if route.location.latitude is not none %}
+          {% if route.location.is_live %}{{ '%.5f'|format(route.location.latitude) }}, {{ '%.5f'|format(route.location.longitude) }}
+          {% elif route.location.simulated %}Simulated · {{ '%.5f'|format(route.location.latitude) }}, {{ '%.5f'|format(route.location.longitude) }}
+          {% else %}Last shared · {{ '%.5f'|format(route.location.latitude) }}, {{ '%.5f'|format(route.location.longitude) }}{% endif %}
+        {% else %}Waiting for GPS fix{% endif %}
+      </dd></div>
+      <div><dt>Trip start time</dt><dd id="driver-trip-started">{{ route.location.trip_started_at|pretty_dt if route.location.trip_started_at else '—' }}</dd></div>
+      <div><dt>Tracking status</dt><dd id="driver-tracking-status">{{ route.location.trip_status }}</dd></div>
+      <div><dt>Last location update</dt><dd id="driver-last-updated">{{ route.location.last_updated|pretty_dt if route.location.last_updated else '—' }}</dd></div>
+    </dl>
+    <p class="muted small">Departure: {{ route.departure_time|pretty_time }} · Return: {{ route.to_departure_time|pretty_time }}</p>
+    <p class="muted small">For accurate movement, keep this page open on the driver's phone with location permission allowed while the bus is moving. A stationary device reports a stationary position.</p>
+  </section>
+
+  <section class="panel driver-map-panel">
+    <div class="section-head"><div><span class="auth-section-label">ROUTE OVERVIEW</span><h2>{{ route.route_code }} bus route</h2></div><span class="route-badge">{{ route.bus_number }}</span></div>
+    <p class="muted small">Stops: {% for stop in route.stops %}{{ stop.stop_name }}{% if not loop.last %} → {% endif %}{% endfor %}</p>
+    <div id="loc-data" data-status="{{ route.location.status }}" data-label="{{ route.location.label }}"
+         data-bus="{{ route.bus_number }}" data-near="{{ route.location.near or '' }}"
+         data-live="{{ 'true' if route.location.is_live else 'false' }}"
+         data-trip-status="{{ route.location.trip_status }}"
+         data-lat="{{ route.location.latitude if route.location.latitude is not none else '' }}"
+         data-lon="{{ route.location.longitude if route.location.longitude is not none else '' }}"></div>
+    <div id="map" class="map driver-map"></div>
+    <p id="map-note" class="muted small" hidden></p>
+    <script type="application/json" id="route-geo">{{ {'stops': route.geo, 'color': route.color} | tojson }}</script>
+  </section>
+</div>
+{% else %}
+<section class="panel"><div class="empty"><span class="empty-icon">🚌</span><p><strong>No bus route is assigned to your account.</strong></p><p>Contact the administrator to get a route assignment.</p></div></section>
+{% endif %}
+{% endblock %}
+{% block scripts %}{% if route %}<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>{% endif %}{% endblock %}

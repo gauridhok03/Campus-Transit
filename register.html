@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Student registration{% endblock %}
+{% block content %}
+<div class="auth-register-layout">
+  <section class="auth-register-intro"><a class="auth-back" href="{{ url_for('student_dashboard') }}">← All portals</a><span class="auth-kicker"><span class="auth-kicker-dot"></span> CAMPUS TRANSIT</span><div class="auth-form-aside-icon">🎓</div><h1>Your campus commute starts here.</h1><p>Create your student account to explore bus routes, choose your preferred route and stay updated with campus transport.</p><div class="auth-aside-bottom">✦ One account. A smoother journey.</div></section>
+  <section class="auth-register-card"><div class="auth-form-head"><span class="auth-section-label">STUDENT REGISTRATION</span><h2>Create your account</h2><p>Enter your details to get started.</p></div>
+  <form method="post" class="form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="row2"><div><label>Full name</label><input name="full_name" required value="{{ form.get('full_name','') }}"></div>
+    <div><label>Student ID / PRN</label><input name="prn" required value="{{ form.get('prn','') }}"></div></div>
+    <div class="row2"><div><label>College email</label><input type="email" name="email" required value="{{ form.get('email','') }}"></div>
+    <div><label>Mobile number</label><input name="mobile" required value="{{ form.get('mobile','') }}"></div></div>
+    <div class="row2"><div><label>Department</label><input name="department" required value="{{ form.get('department','') }}"></div>
+    <div><label>Year</label><select name="year" required><option value="">Select year</option>{% for y in ['First Year','Second Year','Third Year','Fourth Year'] %}<option>{{ y }}</option>{% endfor %}</select></div></div>
+    <div class="row2"><div><label>Division</label><input name="division" required value="{{ form.get('division','') }}"></div>
+    <div><label>Assigned route (optional)</label><select name="route_code"><option value="">Select later</option>{% for r in routes %}<option value="{{ r.route_code }}">{{ r.route_code }} · {{ r.name }}</option>{% endfor %}</select></div></div>
+    <div class="row2"><div><label>Password (minimum 8 characters)</label><input id="register-password" type="password" name="password" minlength="8" required></div>
+    <div><label>Confirm password</label><input id="register-confirm" type="password" name="confirm_password" minlength="8" required></div></div>
+    <label class="small"><input type="checkbox" onclick="const a=document.getElementById('register-password'),b=document.getElementById('register-confirm');a.type=b.type=this.checked?'text':'password'"> Show passwords</label>
+    <button class="btn btn-primary" type="submit">Create account</button>
+    <p class="muted small">Already registered? <a href="{{ url_for('user_login', role='student') }}">Student login</a></p>
+  </form>
+  </section>
+</div>
+{% endblock %}

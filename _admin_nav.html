@@ -1,0 +1,12 @@
+<nav class="admin-nav" aria-label="Admin">
+  <a href="{{ url_for('admin_dashboard') }}" class="{{ 'on' if request.endpoint == 'admin_dashboard' else '' }}">📊 Dashboard</a>
+  <a href="{{ url_for('admin_route_new') }}" class="{{ 'on' if request.endpoint == 'admin_route_new' else '' }}">➕ Add route</a>
+  <a href="{{ url_for('live_map') }}">🗺 Live map</a>
+  <a href="{{ url_for('notifications_page') }}">🔔 Notifications</a>
+  <a href="{{ url_for('admin_students') }}">🎓 Students</a>
+  <a href="{{ url_for('admin_drivers') }}">🧑‍✈️ Drivers</a>
+  <a href="{{ url_for('admin_complaints') }}">📝 Complaints</a>
+  <a href="{{ url_for('admin_alerts') }}">🚨 Emergency alerts</a>
+  <a href="{{ url_for('verify_bus_pass') }}">▦ Verify pass</a>
+  <a href="{{ url_for('admin_password_resets') }}">🔑 Password resets</a>
+</nav>

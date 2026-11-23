@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Add route{% endblock %}
+{% block content %}
+{% include "_admin_nav.html" %}
+<div class="panel narrow-wide">
+  <h1>Add a new route</h1>
+  <p class="muted">One route = one bus that runs <strong>both ways</strong>. Enter the stops from the college outwards; the Home → College timings are created automatically (the same journey in reverse) and can be edited later.</p>
+  <form method="post" action="{{ url_for('admin_route_new') }}" class="form" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="row2">
+      <div><label for="route_id">Route ID</label><input id="route_id" name="route_id" value="{{ form.get('route_id', '') }}" placeholder="R21" maxlength="10"></div>
+      <div><label for="bus_number">Bus number</label><input id="bus_number" name="bus_number" value="{{ form.get('bus_number', '') }}" placeholder="BUS-121" maxlength="20"></div>
+    </div>
+    <label for="name">Route name</label>
+    <input id="name" name="name" value="{{ form.get('name', '') }}" placeholder="Pashan-Sus Line" maxlength="60">
+    <div class="row2">
+      <div><label for="to_departure_time">🏠 → 🎓 Home → College departs</label><input id="to_departure_time" name="to_departure_time" type="time" value="{{ form.get('to_departure_time', '') }}"></div>
+      <div><label for="departure_time">🎓 → 🏠 College → Home departs</label><input id="departure_time" name="departure_time" type="time" value="{{ form.get('departure_time', '') }}"></div>
+    </div>
+    <label for="stops_text">Stops from the college outwards (one per line: <em>Stop name, HH:MM</em> or <em>Stop name, HH:MM, latitude, longitude</em>). The first line must be the college. With coordinates on every line the bus is shown moving along the route.</label>
+    <textarea id="stops_text" name="stops_text" rows="7" placeholder="College Gate, 16:30, 18.5204, 73.8567&#10;University Circle, 16:36, 18.5525, 73.8236&#10;Pashan, 16:45, 18.5416, 73.7900&#10;Bavdhan, 17:10, 18.5120, 73.7830">{{ form.get('stops_text', '') }}</textarea>
+    <div class="row2">
+      <div><label for="latitude">Fixed bus latitude <span class="muted">(optional, instead of live simulation)</span></label>
+        <input id="latitude" name="latitude" value="{{ form.get('latitude', '') }}" placeholder="18.5590"></div>
+      <div><label for="longitude">Fixed bus longitude <span class="muted">(optional)</span></label>
+        <input id="longitude" name="longitude" value="{{ form.get('longitude', '') }}" placeholder="73.7868"></div>
+    </div>
+    <label for="reason">Reason for adding this route</label>
+    <input id="reason" name="reason" value="{{ form.get('reason', '') }}" placeholder="New route requested by students" maxlength="200">
+    <button class="btn btn-primary" type="submit">Save route</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}Edit {{ route.route_code }}{% endblock %}
+{% block content %}
+{% include "_admin_nav.html" %}
+<div class="section-head">
+  <h1><span class="route-badge big" style="--rc: {{ route.color }}">{{ route.route_code }}</span> Edit route {{ '(inactive)' if not route.is_active else '' }}</h1>
+  {{ status_badge(route.location) }}
+</div>
+
+<section class="panel">
+  <h2>Route details &amp; departure times</h2>
+  <form method="post" action="{{ url_for('admin_route_details', route_id=route.route_code) }}" class="form" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="row2">
+      <div><label for="name">Route name</label><input id="name" name="name" value="{{ route.name }}" maxlength="60"></div>
+      <div><label for="bus_number">Bus number <span class="muted">(same bus both ways)</span></label><input id="bus_number" name="bus_number" value="{{ route.bus_number }}" maxlength="20"></div>
+    </div>
+    <div class="row2">
+      <div><label for="to_departure_time">🏠 → 🎓 Home → College departs <span class="muted">(now {{ route.to_departure_time|pretty_time }})</span></label>
+        <input id="to_departure_time" name="to_departure_time" type="time" value="{{ route.to_departure_time }}"></div>
+      <div><label for="departure_time">🎓 → 🏠 College → Home departs <span class="muted">(now {{ route.departure_time|pretty_time }})</span></label>
+        <input id="departure_time" name="departure_time" type="time" value="{{ route.departure_time }}"></div>
+    </div>
+    <label class="check"><input type="checkbox" name="shift_stops" checked> Also shift all stop timings of the trip(s) whose departure changes</label>
+    <label for="reason">Reason for this change <span class="muted">(shown to students)</span></label>
+    <input id="reason" name="reason" placeholder="Schedule changed due to traffic." maxlength="200">
+    <button class="btn btn-primary" type="submit">Save changes &amp; notify students</button>
+  </form>
+</section>
+
+<section class="panel">
+  <h2>Stops &amp; timings</h2>
+  <p class="muted small">Stops run from the college outwards. Each stop has two timings: 🎓 → 🏠 (College → Home) and 🏠 → 🎓 (Home → College). Type a reason once, then use any button. Moving a stop up/down moves its name; the time slots stay in place.</p>
+  <label for="stop-reason">Reason for stop changes</label>
+  <input id="stop-reason" placeholder="Stop moved because of road work" maxlength="200">
+
+  <div class="stop-list">
+    <div class="stop-row stop-legend"><span class="order"></span><span class="sl-name">Stop name</span><span class="sl-time">🎓→🏠 time</span><span class="sl-time">🏠→🎓 time</span></div>
+  {% for s in route.stops %}
+    <div class="stop-row">
+      <span class="order">{{ loop.index }}</span>
+      <form method="post" action="{{ url_for('admin_stop_update', route_id=route.route_code, stop_id=s.id) }}" class="stop-edit needs-reason" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="reason">
+        <input name="stop_name" value="{{ s.stop_name }}" aria-label="Stop name" maxlength="50">
+        <input name="arrival_time" type="time" value="{{ s.arrival_time }}" aria-label="College to Home time">
+        <input name="to_time" type="time" value="{{ s.to_time }}" aria-label="Home to College time">
+        <button class="btn btn-small" type="submit">Save</button>
+      </form>
+      <form method="post" action="{{ url_for('admin_stop_move', route_id=route.route_code, stop_id=s.id, direction='up') }}" class="inline needs-reason">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="reason">
+        <button class="btn btn-small" type="submit" title="Move up" {{ 'disabled' if loop.first else '' }}>▲</button></form>
+      <form method="post" action="{{ url_for('admin_stop_move', route_id=route.route_code, stop_id=s.id, direction='down') }}" class="inline needs-reason">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="reason">
+        <button class="btn btn-small" type="submit" title="Move down" {{ 'disabled' if loop.last else '' }}>▼</button></form>
+      <form method="post" action="{{ url_for('admin_stop_delete', route_id=route.route_code, stop_id=s.id) }}" class="inline needs-reason" data-confirm="Remove this stop?">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="reason">
+        <button class="btn btn-small btn-danger" type="submit" title="Remove stop">✕</button></form>
+    </div>
+  {% endfor %}
+  </div>
+
+  <h3>Add a stop</h3>
+  <form method="post" action="{{ url_for('admin_stop_add', route_id=route.route_code) }}" class="stop-add needs-reason" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="reason">
+    <input name="stop_name" placeholder="Stop name" aria-label="New stop name" maxlength="50">
+    <input name="arrival_time" type="time" aria-label="College to Home time" title="College → Home time">
+    <input name="to_time" type="time" aria-label="Home to College time" title="Home → College time (optional, auto if empty)">
+    <input name="position" type="number" min="2" max="{{ route.stops|length + 1 }}" placeholder="Position" aria-label="Position">
+    <input name="latitude" placeholder="Latitude (optional)" aria-label="Latitude">
+    <input name="longitude" placeholder="Longitude (optional)" aria-label="Longitude">
+    <button class="btn btn-primary" type="submit">Add stop</button>
+  </form>
+</section>
+
+<section class="panel">
+  <h2>Simulated bus location</h2>
+  <p class="muted small">These coordinates are <strong>simulated demo data</strong>. Mode now: <strong>{{ 'live simulation (the bus moves along the route)' if route.location.auto else 'manual / frozen' }}</strong>. Status becomes <em>Stale</em> after 5 minutes without an update and <em>Unavailable</em> when coordinates are missing. Saving, “Make 10 min old” and “Clear” freeze the bus so you can demo those states; “Resume live simulation” moves it again.</p>
+  <form method="post" action="{{ url_for('admin_location', route_id=route.route_code) }}" class="form" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="row3">
+      <div><label for="latitude">Latitude</label><input id="latitude" name="latitude" value="{{ route.location.latitude if route.location.latitude is not none else '' }}" placeholder="18.5975"></div>
+      <div><label for="longitude">Longitude</label><input id="longitude" name="longitude" value="{{ route.location.longitude if route.location.longitude is not none else '' }}" placeholder="73.7622"></div>
+      <div><label for="last_updated">Last updated <span class="muted">(blank = now)</span></label>
+        <input id="last_updated" name="last_updated" type="datetime-local" value="{{ route.location.last_updated[:16]|replace(' ', 'T') if route.location.last_updated else '' }}"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" type="submit" name="action" value="save">Save location</button>
+      <button class="btn" type="submit" name="action" value="refresh">Set time to now (Current)</button>
+      <button class="btn btn-accent" type="submit" name="action" value="resume">▶ Resume live simulation</button>
+      <button class="btn" type="submit" name="action" value="make_stale">Make 10 min old (Stale demo)</button>
+      <button class="btn btn-danger" type="submit" name="action" value="clear">Clear location (Unavailable demo)</button>
+    </div>
+  </form>
+</section>
+
+<section class="panel danger-zone">
+  <h2>{{ 'Reactivate' if not route.is_active else 'Deactivate' }} route</h2>
+  <p class="muted small">{{ 'Students can see this route again.' if not route.is_active else 'Students will no longer see this route. Its data is kept.' }}</p>
+  <form method="post" action="{{ url_for('admin_route_status', route_id=route.route_code) }}" class="form row-inline" novalidate
+        data-confirm="{{ 'Reactivate' if not route.is_active else 'Deactivate' }} route {{ route.route_code }}?">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="active" value="{{ '1' if not route.is_active else '0' }}">
+    <input name="reason" placeholder="Reason (shown to students)" aria-label="Reason" maxlength="200">
+    <button class="btn {{ 'btn-primary' if not route.is_active else 'btn-danger' }}" type="submit">{{ 'Reactivate' if not route.is_active else 'Deactivate' }}</button>
+  </form>
+</section>
+{% endblock %}

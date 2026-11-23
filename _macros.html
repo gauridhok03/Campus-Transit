@@ -1,0 +1,20 @@
+{% macro status_badge(loc) -%}
+<span class="badge badge-{{ loc.status }}"><i class="pulse"></i>{{ loc.label }}</span>
+{%- endmacro %}
+
+{% macro notification_item(n) -%}
+{% set t = n.change_type %}
+{% set icon = '⏰' if 'Departure' in t else '🕒' if 'timing' in t else '🚏' if 'Stop' in t else '🚌' if 'Bus' in t else '✨' if 'New route' in t else '⛔' if 'deactivated' in t else '✅' if 'reactivated' in t else '🏷️' %}
+<li class="notif " data-id="{{ n.id }}">
+  <span class="notif-icon">{{ icon }}</span>
+  <div class="notif-body">
+    <div class="notif-head"><span class="route-badge small">{{ n.route_code }}</span> <strong>{{ n.change_type }}</strong><span class="new-tag">NEW</span></div>
+    <p>{{ n.description }}</p>
+    {% if n.old_value or n.new_value %}
+    <p class="change"><span class="old">Old: {{ n.old_value or '—' }}</span> <span class="arrow">→</span> <span class="new">New: {{ n.new_value or '—' }}</span></p>
+    {% endif %}
+    <p class="reason"><strong>Reason:</strong> {{ n.reason }}</p>
+    <p class="muted small">🕒 {{ n.created_at|pretty_dt }} · {{ n.created_at|time_ago }}</p>
+  </div>
+</li>
+{%- endmacro %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Digital bus pass{% endblock %}
+{% block head %}<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>{% endblock %}
+{% block content %}
+<div class="panel narrow-wide">
+  <div class="section-head"><h1>Digital bus pass</h1><span class="live-pill">Student pass</span></div>
+  {% if student %}
+  <div class="row2">
+    <div><p><strong>{{ student.full_name }}</strong></p><p>PRN: {{ student.prn }}</p><p>Department: {{ student.department }}</p><p>Year / Division: {{ student.year }} / {{ student.division }}</p>
+    <p>Bus: {{ student.bus_number or 'Not assigned' }}</p><p>Route: {{ student.route_code or 'Not assigned' }} {{ student.route_name or '' }}</p>
+    <p>Valid until: {{ student.valid_until }}</p></div>
+    <div><div id="pass-qr" aria-label="QR code bus pass"></div><p class="muted small">Show this QR code to an authorized verifier.</p></div>
+  </div>
+  <script>new QRCode(document.getElementById("pass-qr"), {text: {{ student.token|tojson }}, width: 180, height: 180});</script>
+  {% else %}<p>Bus pass has not been generated. Contact the transport office.</p>{% endif %}
+</div>
+{% endblock %}

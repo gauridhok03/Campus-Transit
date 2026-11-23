@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+<section class="panel" id="notif-page" data-latest-id="{{ latest_id }}">
+  <div class="section-head">
+    <h1>🔔 Notifications</h1>
+    <form method="get" action="{{ url_for('notifications_page') }}" class="filter">
+      {% if category %}<input type="hidden" name="type" value="{{ category }}">{% endif %}
+      <label for="route-filter">Route</label>
+      <select id="route-filter" name="route" onchange="this.form.submit()">
+        <option value="">All routes</option>
+        {% for r in routes %}<option value="{{ r.route_code }}" {{ 'selected' if r.route_code|upper == route_filter|upper else '' }}>{{ r.route_code }} · {{ r.name }}</option>{% endfor %}
+      </select>
+      <noscript><button class="btn" type="submit">Filter</button></noscript>
+    </form>
+  </div>
+  <nav class="filters" aria-label="Notification type">
+    {% set tabs = [('', '🔔 All'), ('schedule', '⏰ Schedule'), ('stops', '🚏 Stops'), ('bus', '🚌 Bus'), ('routes', '🛣 Routes'), ('emergency', '🚨 Alerts')] %}
+    {% for key, label in tabs %}
+    <a class="chip-link {{ 'on' if category == key else '' }}" href="{{ url_for('notifications_page', route=route_filter or None, type=key or None) }}">{{ label }}</a>
+    {% endfor %}
+  </nav>
+  <div id="all-notifs" data-poll-url="{{ url_for('partial_notifications', route=route_filter or None, type=category or None, limit=100, grouped=1) }}">
+    {% set grouped = True %}
+    {% include "_notification_list.html" %}
+  </div>
+</section>
+{% endblock %}

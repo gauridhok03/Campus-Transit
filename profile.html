@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}My profile{% endblock %}
+{% block content %}
+<div class="panel narrow-wide"><h1>My profile</h1>
+<form method="post" class="form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<label>Full name</label><input name="full_name" required value="{{ student.full_name }}">
+<label>PRN</label><input value="{{ student.prn }}" disabled>
+<label>Email</label><input value="{{ student.email }}" disabled>
+<label>Mobile number</label><input name="mobile" required value="{{ student.mobile }}">
+<label>Department</label><input value="{{ student.department }}" disabled>
+<label>Year / Division</label><input value="{{ student.year }} / {{ student.division }}" disabled>
+<label>Assigned route</label><input value="{{ student.route_code or 'Not assigned' }}" disabled>
+<h2>Change password (optional)</h2>
+<label>Current password</label><input type="password" name="current_password">
+<label>New password</label><input type="password" name="new_password" minlength="8">
+<label>Confirm new password</label><input type="password" name="confirm_password" minlength="8">
+<button class="btn btn-primary" type="submit">Save profile</button></form></div>
+{% endblock %}

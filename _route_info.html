@@ -1,0 +1,39 @@
+{% from "_macros.html" import status_badge %}
+<div class="route-banner" style="--rc: {{ route.color }}">
+  <div>
+    <span class="route-badge big">{{ route.route_code }}</span>
+    <span class="dir dir-both on-dark">⇄ Same bus, both ways</span>
+    <h1>{{ route.name }}</h1>
+    <p>{{ route.start_point }} ⇄ {{ route.destination }} · {{ route.stops|length }} stops</p>
+  </div>
+  <div class="banner-right">{{ status_badge(route.location) }}</div>
+</div>
+<dl class="facts facts-big" style="--rc: {{ route.color }}">
+  <div><dt>🚌 Assigned bus</dt><dd>{{ route.bus_number }}</dd></div>
+  <div><dt>🏠→🎓 Leaves home</dt><dd>{{ route.to_departure_time|pretty_time }}</dd></div>
+  <div><dt>🎓→🏠 Leaves college</dt><dd>{{ route.departure_time|pretty_time }}</dd></div>
+  <div><dt>🚏 Stops</dt><dd>{{ route.stops|length }}</dd></div>
+</dl>
+
+<div class="tabs" role="tablist">
+  {% for d in ('to', 'from') %}
+  <button type="button" class="tab" role="tab" data-tab="{{ d }}">{{ '🏠 → 🎓' if d == 'to' else '🎓 → 🏠' }} {{ trip_labels[d] }}<small>leaves {{ route.trips[d].departure|pretty_time }}</small></button>
+  {% endfor %}
+</div>
+{% for d in ('to', 'from') %}
+{% set trip = route.trips[d] %}
+<div class="tab-pane" data-pane="{{ d }}" style="--rc: {{ route.color }}">
+  <p class="trip-summary"><strong>{{ trip.start }}</strong> → <strong>{{ trip.end }}</strong> · departs {{ trip.departure|pretty_time }} · arrives {{ trip.arrives|pretty_time }}</p>
+  <ol class="timeline">
+    {% for s in trip.stops %}
+    <li class="{{ 'first' if loop.first else ('last' if loop.last else '') }}">
+      <span class="dot"></span>
+      <div class="stop-name">{{ s.name }}
+        {% if loop.first %}<span class="tag">Start</span>{% elif loop.last %}<span class="tag">End</span>{% endif %}
+      </div>
+      <div class="stop-time">{{ s.time|pretty_time }}</div>
+    </li>
+    {% endfor %}
+  </ol>
+</div>
+{% endfor %}
